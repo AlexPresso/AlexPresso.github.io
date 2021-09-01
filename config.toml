@@ -1,0 +1,46 @@
+baseURL = "https://alexpresso.me/"
+languageCode = "en-us"
+theme = "hugo-coffee-theme"
+
+[params]
+    defaultTheme = "dark"
+    showMenuItems = 3
+
+    showReadingTime = true
+    toc = true
+    rssFullText = false
+
+    [params.portrait]
+        path     = "/img/portrait.jpg"
+        alt      = "Coffee"
+        maxWidth = "200px"
+
+    [[params.social]]
+        name = "github"
+        url  = "https://github.com/AlexPresso"
+
+[languages]
+    [languages.en]
+        title = "AlexPresso"
+        subtitle = "A front, back, left, right developper and cyber-security administrator."
+        keywords = "developper, frontend, backend, tech, IT, cyber security"
+        dateFormatSingle = "02.01.2006"
+        dateFormatList = "02.01.2006"
+
+        [languages.en.params.logo]
+            logoText = "./alexpresso.me"
+            logoHomeLink = "/"
+
+        [languages.en.menu]
+            [[languages.en.menu.main]]
+                identifier = "blog"
+                name = "Blog"
+                url = "/posts"
+            [[languages.en.menu.main]]
+                identifier = "tags"
+                name = "Tags"
+                url = "/tags"
+            [[languages.en.menu.main]]
+                identifier = "rss"
+                name = "RSS"
+                url = "/posts/index.xml"

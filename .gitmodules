@@ -1,0 +1,3 @@
+[submodule "themes/hugo-coffee-theme"]
+	path = themes/hugo-coffee-theme
+	url = https://github.com/AlexPresso/hugo-coffee-theme
