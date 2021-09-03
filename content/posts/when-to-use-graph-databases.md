@@ -1,7 +1,7 @@
 ---
 title: "When (not) to use graph databases"
 date: 2021-09-01T23:56:46+02:00
-draft: true
+draft: false
 cover: https://wallpaperaccess.com/full/5568.jpg
 tags:
     - databases
