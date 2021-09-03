@@ -129,7 +129,10 @@ Then in the late 2000s, <a href=https://en.wikipedia.org/wiki/ACID>ACID</a> (a p
 <h3 id=retrieving-connected-data>Retrieving connected data</h3>
 <p>In relational databases, &ldquo;connection&rdquo; to other entities/rows is done by referring primary keys and foreign key columns, using Joins.
 Joins are processed at query time matching primary and foreign keys of all rows of the related tables (loops iterating on every rows of every joined tables).<br>
-These operations are really heavy and even if indexes can be used to optimize it, having more and more rows will kill performances in an exponential way.</p>
+These operations are really heavy and even if indexes can be used to optimize it, adding rows in an exponential way will tend to degrade performances in an exponential way.</p>
+<blockquote>
+<p>Note that: The following example is comparing a single RDBMS instance over a single graph database instance, companies are scaling (adding more &ldquo;shared&rdquo; instances) of RDBMSes to dilute their limitations.</p>
+</blockquote>
 <p><img src=/img/posts/when-to-use-graph-databases/relational_db_join.png alt="Relational join loop"></p>
 <p>In the above relational example, we used the following query to find a player&rsquo;s games list:</p>
 <div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-sql data-lang=sql><span style=color:#66d9ef>SELECT</span> <span style=color:#66d9ef>g</span>.id, <span style=color:#66d9ef>g</span>.name <span style=color:#66d9ef>FROM</span> players p
@@ -171,8 +174,8 @@ These databases are also younger and less mature than relational databases. They
 </thead>
 <tbody>
 <tr>
-<td>Faster at retrieving interconnected data</td>
-<td>Less Mature (lacking some clustering features for now)</td>
+<td>Faster at retrieving complex interconnected data</td>
+<td>Less Mature (lacking some scaling/clustering features for now)</td>
 </tr>
 <tr>
 <td>Flexible and agile structure with a schema-less design</td>
@@ -206,7 +209,7 @@ They get particularly usefull and efficient on models where relational databases
 <li>Relational is a good choice</li>
 </ul>
 </li>
-<li>Do I need to handle a large amount of connections in real-time ?
+<li>Do I need to handle a large amount of requests in real-time ?
 <ul>
 <li>Relational is a good choice</li>
 </ul>
