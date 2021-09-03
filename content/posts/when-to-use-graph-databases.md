@@ -42,10 +42,14 @@ You need to know that every relational database model is transposable to a graph
 
 ## Relational vs. Graph Databases
 Now that you have a bit of an idea about what a graph database is, let's talk about the main differences with a relational database.
+
 ### Retrieving connected data
 In relational databases, "connection" to other entities/rows is done by referring primary keys and foreign key columns, using Joins.
 Joins are processed at query time matching primary and foreign keys of all rows of the related tables (loops iterating on every rows of every joined tables).  
-These operations are really heavy and even if indexes can be used to optimize it, having more and more rows will kill performances in an exponential way.
+These operations are really heavy and even if indexes can be used to optimize it, adding rows in an exponential way will tend to degrade performances in an exponential way.
+
+> Note that: The following example is comparing a single RDBMS instance over a single graph database instance, companies are scaling (adding more "shared" instances) of RDBMSes to dilute their limitations.
+
 
 ![Relational join loop](/img/posts/when-to-use-graph-databases/relational_db_join.png)
 
@@ -91,10 +95,10 @@ Despite the fact graph databases outrun relational ones in many ways, they at th
 The graph databases are faster at retrieving data because they only process the concrete number of relationships a node has and having schema-less data is also a good advantage when it comes to model changes and evolutions.  
 These databases are also younger and less mature than relational databases. They for now have some issues at handling a large amount of transactions and, for most databases only supports master to slave replication.
 
-| Pros                                                   | Cons                                                     |
-|--------------------------------------------------------|----------------------------------------------------------|
-| Faster at retrieving interconnected data               | Less Mature (lacking some clustering features for now)   |
-| Flexible and agile structure with a schema-less design |                                                          |
+| Pros                                                   | Cons                                                             |
+|--------------------------------------------------------|------------------------------------------------------------------|
+| Faster at retrieving complex interconnected data       | Less Mature (lacking some scaling/clustering features for now)   |
+| Flexible and agile structure with a schema-less design |                                                                  |
 
 ## When (not) to use a graph database
 The strength of a database can be measured by comparing: data integrity, performances, efficiency and scalability.
@@ -112,7 +116,7 @@ However, graph databases aren't a perfect solution for every problem. Far from i
   - Graph is a good choice
 - Does an entity need to store large chunks of information ? 
   - Relational is a good choice
-- Do I need to handle a large amount of connections in real-time ?
+- Do I need to handle a large amount of requests in real-time ?
   - Relational is a good choice
 
 > Note that: You can also make benefits of using both of these technologies, like some famous social networks, using relational databases as persistent master data and graph databases as a cache / fast resolution engine, referencing IDs of relational entities.
