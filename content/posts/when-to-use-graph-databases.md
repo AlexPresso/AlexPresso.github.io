@@ -48,7 +48,7 @@ In relational databases, "connection" to other entities/rows is done by referrin
 Joins are processed at query time matching primary and foreign keys of all rows of the related tables (loops iterating on every rows of every joined tables).  
 These operations are really heavy and even if indexes can be used to optimize it, adding rows in an exponential way will tend to degrade performances in an exponential way.
 
-> Note that: The following example is comparing a single RDBMS instance over a single graph database instance, companies are scaling (adding more "shared" instances) of RDBMSes to dilute their limitations.
+> Note that: The following example is comparing a single RDBMS instance over a single graph database instance, companies are scaling-up (adding more "shared" instances of RDBMSes) to dilute their limitations.
 
 
 ![Relational join loop](/img/posts/when-to-use-graph-databases/relational_db_join.png)
