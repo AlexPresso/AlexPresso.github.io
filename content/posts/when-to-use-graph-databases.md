@@ -1,8 +1,10 @@
 ---
 title: "When (not) to use graph databases"
+description: After more than three years of using Neo4J (a graph database based on the JVM), I wanted to share the benefits and drawbacks of using such a technology.
 date: 2021-09-01T23:56:46+02:00
 draft: false
-cover: https://wallpaperaccess.com/full/5568.jpg
+cover: /img/posts/when-to-use-graph-databases/cover.png
+images: [/img/posts/when-to-use-graph-databases/cover.png]
 tags:
     - databases
     - graph
