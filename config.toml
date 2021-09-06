@@ -22,8 +22,8 @@ theme = "hugo-coffee-theme"
 [languages]
     [languages.en]
         title = "AlexPresso"
-        subtitle = "A front, back, left, right developper and cyber-security administrator."
-        keywords = "developper, frontend, backend, tech, IT, cyber security"
+        subtitle = "A front, back, left, right developer and cyber-security administrator."
+        keywords = "developer, frontend, backend, tech, IT, cyber security"
         dateFormatSingle = "02.01.2006"
         dateFormatList = "02.01.2006"
 
