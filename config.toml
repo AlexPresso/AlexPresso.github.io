@@ -1,6 +1,7 @@
 baseURL = "https://alexpresso.me/"
 languageCode = "en-us"
 theme = "hugo-coffee-theme"
+googleAnalytics = "G-4SESCEH54L"
 
 [params]
     defaultTheme = "dark"
