@@ -17,11 +17,11 @@ After more than three years of using [Neo4J](https://neo4j.com/) (a graph databa
 I wanted to share the benefits and drawbacks of using such a technology.
 
 ## What is a Graph Database ?
-First things first, a graph database is a [NoSQL](https://en.wikipedia.org/wiki/NoSQL) database based (as its name suggests) on the [graphs theory](https://en.wikipedia.org/wiki/Graph_theory). 
+First things first, a graph database is a [NoSQL](https://en.wikipedia.org/wiki/NoSQL) database based (as its name suggests) on the [graph's theory](https://en.wikipedia.org/wiki/Graph_theory). 
 It was created to address the limitations of relational databases by storing complex interconnected data, in a pure conceptual way using nodes and relationships.
 
 The first concepts of network / graph models for storing and reading data were imagined in the late 1960s 
-but commercial versions only started to appear in the early 2000s. At this point they were mostly used for reseach and web pages indexation because they weren't stable and secure enough.
+but commercial versions only started to appear in the early 2000s. At this point they were mostly used for research and web pages indexation because they weren't stable and secure enough.
 Then in the late 2000s, [ACID](https://en.wikipedia.org/wiki/ACID) (a paradigm used to guarantee data integrity) compliant graph databases such as Neo4J became available.
 
 Nowadays, they're mainly used in social networks, AIs, banking, tracking and research.
@@ -35,9 +35,9 @@ The Graph Data Model is composed of the following components:
 
 ![Graph model example](/img/posts/when-to-use-graph-databases/graph_model_example.png)
 
-In the above example we have two nodes (Node A and Node B) having the same `NodeLabel` and a `name` property, connected by a relationship having the `RELATION` type.
+In the above example, we have two nodes (Node A and Node B) having the same `NodeLabel` and a `name` property, connected by a relationship having the `RELATION` type.
 
-If we compare the graph data model to the relational one, you can think of Nodes as rows, Properties as columns, Labels as tables (or a `group_id` column) and Relationships as foreign keys or join tables, if they hold properties.
+If we compare the graph data model to the relational one, you can think of Nodes as rows, Properties as columns, labels as tables (or a `group_id` column) and Relationships as foreign keys or join tables, if they hold properties.
 
 You need to know that every relational database model is transposable to a graph model. It's also possible to do it the other way (graph to relational) but you're less likely to do it because of the limitations of relational databases, that we will discuss in the next part.
 
@@ -46,8 +46,8 @@ You need to know that every relational database model is transposable to a graph
 Now that you have a bit of an idea about what a graph database is, let's talk about the main differences with a relational database.
 
 ### Retrieving connected data
-In relational databases, "connection" to other entities/rows is done by referring primary keys and foreign key columns, using Joins.
-Joins are processed at query time matching primary and foreign keys of all rows of the related tables (loops iterating on every rows of every joined tables).  
+In relational databases, "connection" to other entities/rows is done by referring primary keys and foreign key columns, using joins.
+Joins are processed at query time matching primary and foreign keys of all rows of the related tables (loops iterating on every row of every joined tables).  
 These operations are really heavy and even if indexes can be used to optimize it, adding rows in an exponential way will tend to degrade performances in an exponential way.
 
 > Note that: The following example is comparing a single RDBMS instance over a single graph database instance, companies are scaling-up (adding more "shared" instances of RDBMSes) to dilute their limitations.
@@ -63,8 +63,10 @@ INNER JOIN games g ON ptg.game_id = g.id
 WHERE p.id = ?
 ```
 At first, the database engine iterates over the `players` rows to find one having `id = ?`.
-Then it iterates over `players_to_games` (potentially millions of rows) to locate all the rows referencing our player id and iterates again on `games` (potentially other millions of rows) to locate all rows referencing previous `game_id`.  
+Then it iterates over `players_to_games` (potentially millions of rows) to locate all the rows referencing our player ID and iterates again on `games` (potentially other millions of rows) to locate all rows referencing previous `game_id`.  
 Now that it has made `millions + millions + millions` iterations, it finally returns the 4 games in the player's list.
+
+I'm exaggerating it, so you can understand the difference, in fact, indexes are optimizing it a lot. But even with indexes, your RDBMS is iterating over unneeded data.
 
 ![Graph relations example](/img/posts/when-to-use-graph-databases/graph_relations_example.png)
 
@@ -106,7 +108,7 @@ These databases are also younger and less mature than relational databases. They
 The strength of a database can be measured by comparing: data integrity, performances, efficiency and scalability.
 
 The main purpose of a graph database can be roughly summarized to make quicker and simpler query results.
-They get particularly usefull and efficient on models where relational databases reach their capacity limits, because they're less influenced by data quantity and complexity.
+They get particularly useful and efficient on models where relational databases reach their capacity limits, because they're less influenced by data quantity and complexity.
 
 However, graph databases aren't a perfect solution for every problem. Far from it. Here are some simple questions to help you choose between graph and relational:
 
