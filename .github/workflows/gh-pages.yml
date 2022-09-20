@@ -8,13 +8,13 @@ on:
 
 jobs:
   deploy:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
         with:
           submodules: recursive
           fetch-depth: 0
-          ssh-key: ${{ secrets.ACTIONS_DEPLOY_KEY }}
+          token: ${{ secrets.GH_PAT }}
 
       - name: Setup Hugo
         uses: peaceiris/actions-hugo@v2
