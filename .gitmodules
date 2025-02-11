@@ -1,3 +1,4 @@
-[submodule "themes/hugo-coffee-theme"]
-	path = themes/hugo-coffee-theme
-	url = git@github.com:AlexPresso/hugo-coffee-theme.git
+[submodule "themes/hugo-alexpresso-theme"]
+	path = themes/hugo-alexpresso-theme
+	url = git@github.com:AlexPresso/hugo-alexpresso-theme.git
+	branch = main
