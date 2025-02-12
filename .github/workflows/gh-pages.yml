@@ -26,8 +26,9 @@ jobs:
         run: hugo --minify --configDir themes/hugo-alexpresso-theme/config
 
       - name: Deploy
-        uses: peaceiris/actions-gh-pages@v4
+        uses: peaceiris/actions-gh-pages@v3
         if: ${{ github.ref == 'refs/heads/main' }}
         with:
-          deploy_key: ${{ secrets.SSH_PRIVATE_KEY_PAGES }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
           publish_dir: ./public
