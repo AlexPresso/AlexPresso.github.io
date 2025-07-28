@@ -2,7 +2,9 @@
 title: "Bypassing Netflix’s Home Restrictions"
 date: 2025-07-21T22:30:49+02:00
 draft: true
-future: true
+_build:
+  render: "false"
+  list: "local"
 ---
 
 > "Love is sharing a password." — [Netflix, on Twitter - 2017-03-10](https://x.com/netflix/status/840276073040371712)
