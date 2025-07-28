@@ -23,7 +23,7 @@ jobs:
           extended: true
 
       - name: Build
-        run: hugo --minify --configDir themes/hugo-alexpresso-theme/config
+        run: hugo --minify --buildDrafts --configDir themes/hugo-alexpresso-theme/config
 
       - name: Deploy
         uses: peaceiris/actions-gh-pages@v3
