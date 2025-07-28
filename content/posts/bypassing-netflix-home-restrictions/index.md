@@ -365,7 +365,7 @@ While ECH (**Encrypted Client Hello**) is not yet officially supported, it aims 
 already censored its usage, as it would need direct traffic interception (a **TLS Termination Point**) to read SNIs.
 
 Now, you might be thinking :
-> "Okay, ECH is a good thing, but does it mean this technique to bypass Netflix won't work anymore ?"
+> "Okay, ECH is a good thing, but does that mean this technique to bypass Netflix won't work anymore ?"
 
 Short answer: Yes, but it's still possible to achieve SNI-like forwarding, without it. 
 
