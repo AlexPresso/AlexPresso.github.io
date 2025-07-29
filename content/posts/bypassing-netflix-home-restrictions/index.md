@@ -6,6 +6,10 @@ draft: false
 
 > "Love is sharing a password." — [Netflix, on Twitter - 2017-03-10](https://x.com/netflix/status/840276073040371712)
 
+{{< alert >}}
+**Disclaimer:** This article is for educational purposes only; Bypassing Netflix restrictions is against their terms of services (now we're done with the legal).
+{{< /alert >}}
+
 In 2023, Netflix started to crack down on password sharing.
 One way they did this was by introducing the concept of **Netflix Households**.
 Now, while I get that running a massive streaming platform like Netflix isn’t cheap, I completely disagree with how they've chosen to enforce this.
