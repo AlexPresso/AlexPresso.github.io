@@ -287,7 +287,7 @@ additionalDnsmasq:
 ```
 </details>
 
-At this point, all local devices are already be accessing Netflix through the Forward Proxy.
+At this point, all local devices are already accessing Netflix through the Forward Proxy.
 Forward Proxy `stdout` logs:
 ```log
 10.42.0.1 -> occ-0-XXXX-XXXX.1.nflxso.net:443 proto=TCP bytes_sent=24438 bytes_received=991 duration=2.510s
