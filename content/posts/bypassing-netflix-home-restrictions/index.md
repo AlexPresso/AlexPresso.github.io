@@ -14,7 +14,7 @@ In 2023, Netflix started to crack down on password sharing.
 One way they did this was by introducing the concept of **Netflix Households**.
 Now, while I get that running a massive streaming platform like Netflix isn’t cheap, I completely disagree with how they've chosen to enforce this.
 
-Families today don’t always live in the same household. 
+Families today don’t always live in the same house. 
 Kids move away for college. Parents may live in different cities. Partners travel. That’s exactly the situation I found myself in, and here is how I fixed it.
 
 ## Netflix Household
