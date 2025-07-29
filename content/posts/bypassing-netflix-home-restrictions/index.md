@@ -361,9 +361,9 @@ PresharedKey = # Your Peer PSK
 ## A Note On TLSv1.3 And ECH
 
 As said before, having a plaintext CH (**Client Hello**) is a serious threat to privacy,
-as anybody monitoring the network can know the domain names of websites you're visiting by just monitoring the SNI (**Server Name Indication**).
+as anybody monitoring the network can know the domain names of websites you're visiting by just reading the SNI (**Server Name Indication**).
 
-While ECH (**Encrypted Client Hello**) is still in draft status, it's intended to become a standard. Some countries like [Russia](https://portal.noc.gov.ru/ru/news/2024/11/07/%D1%80%D0%B5%D0%BA%D0%BE%D0%BC%D0%B5%D0%BD%D0%B4%D1%83%D0%B5%D0%BC-%D0%BE%D1%82%D0%BA%D0%B0%D0%B7%D0%B0%D1%82%D1%8C%D1%81%D1%8F-%D0%BE%D1%82-cdn-%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%B0-cloudflare/) 
+While ECH (**Encrypted Client Hello**) is still in [draft](https://datatracker.ietf.org/doc/html/draft-ietf-tls-esni-25) status, it's intended to become a standard. Some countries like [Russia](https://portal.noc.gov.ru/ru/news/2024/11/07/%D1%80%D0%B5%D0%BA%D0%BE%D0%BC%D0%B5%D0%BD%D0%B4%D1%83%D0%B5%D0%BC-%D0%BE%D1%82%D0%BA%D0%B0%D0%B7%D0%B0%D1%82%D1%8C%D1%81%D1%8F-%D0%BE%D1%82-cdn-%D1%81%D0%B5%D1%80%D0%B2%D0%B8%D1%81%D0%B0-cloudflare/) 
 have already censored its usage, as monitoring encrypted SNIs would require direct traffic interception (a **TLS Termination Point**).
 
 Now, you might be thinking:
