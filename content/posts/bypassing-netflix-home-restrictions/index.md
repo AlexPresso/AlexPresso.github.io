@@ -311,7 +311,7 @@ PresharedKey = # Your Peer PSK
 ```
 </details>
 
-*Note that: the `AllowedIPs` setting in the client configuration is crucial - it determines which traffic will be routed through the VPN. Here we're only tunneling traffic for the PiHole and Forward Proxy.*
+*Note that the `AllowedIPs` setting in the client configuration is crucial - it determines which traffic will be routed through the VPN. Here we're only tunneling traffic for the PiHole and Forward Proxy.*
 
 ## A Note On TLSv1.3 And ECH
 
