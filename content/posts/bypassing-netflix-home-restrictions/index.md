@@ -168,7 +168,7 @@ stream {
   resolver 1.1.1.1 ipv6=on valid=10s;
 
   log_format basic '[$time_local] $remote_addr -> $ssl_preread_server_name:$server_port '
-                   'proto=$protocol bytes_sent=$bytes_sent bytes_received=$bytes_received duration=${session_time}s';
+                   'proto=$protocol bytes_sent=$bytes_sent bytes_received=$bytes_received duration=${session_time}ms';
 
   server {
     listen 443;
@@ -181,7 +181,7 @@ http {
   resolver 1.1.1.1 ipv6=on valid=10s;
 
   log_format basic '[$time_local] $remote_addr -> $host:$server_port '
-                   'proto=$server_protocol bytes_sent=$bytes_sent bytes_received=$request_length duration=${request_time}s';
+                   'proto=$server_protocol bytes_sent=$bytes_sent bytes_received=$request_length duration=${request_time}ms';
 
   server {
     listen 80;
@@ -204,89 +204,44 @@ Now that the forward proxy is deployed, Netflix domain entries need to be added 
 Of course, manually adding a record for every single domain and subdomain would be a tedious and unsafe task. For this purpose, wildcard domain entries (e.g. `*.netflix.com`, matching any subdomain of netflix) are perfect, but PiHole
 does not natively support it. This is understandable since wildcard domain records are primarily used for DNS Spoofing, which is generally something you want to prevent.
 
-Fortunately, PiHole relies on [dnsmasq](https://thekelleys.org.uk/dnsmasq/doc.html) which does handle "wildcard" domain entries:
-<details>
-    <summary>/etc/dnsmasq.d/1-additional.conf</summary>
+Fortunately, PiHole supports regex patterns in blacklists/allowlists. 
+It also supports an extension syntax that lets you override the reply IP, making it possible to achieve the same result.
 
-```Bash
-address=/netflix.net/192.168.1.108
-address=/netflixstudios.com/192.168.1.108
-address=/netflix.com/192.168.1.108
-address=/fast.com/192.168.1.108
-address=/netflix.ca/192.168.1.108
-address=/netflix.com/192.168.1.108
-address=/netflix.net/192.168.1.108
-address=/netflixinvestor.com/192.168.1.108
-address=/nflxext.com/192.168.1.108
-address=/nflximg.com/192.168.1.108
-address=/nflximg.net/192.168.1.108
-address=/nflxsearch.net/192.168.1.108
-address=/nflxso.net/192.168.1.108
-address=/nflxvideo.net/192.168.1.108
-address=/netflixdnstest*.net/192.168.1.108
-address=/amazonaws.com/192.168.1.108
+*Note that adding entries to the blacklist is preferable to the allowlist because the regex denylist is
+[checked last](https://docs.pi-hole.net/database/domain-database/#priorities), which helps keep the Ad-Blocking system functional.* 
 
-address=/netflix.net/fd12:caf3:babe::1
-address=/netflixstudios.com/fd12:caf3:babe::1
-address=/netflix.com/fd12:caf3:babe::1
-address=/fast.com/fd12:caf3:babe::1
-address=/netflix.ca/fd12:caf3:babe::1
-address=/netflix.com/fd12:caf3:babe::1
-address=/netflix.net/fd12:caf3:babe::1
-address=/netflixinvestor.com/fd12:caf3:babe::1
-address=/nflxext.com/fd12:caf3:babe::1
-address=/nflximg.com/fd12:caf3:babe::1
-address=/nflximg.net/fd12:caf3:babe::1
-address=/nflxsearch.net/fd12:caf3:babe::1
-address=/nflxso.net/fd12:caf3:babe::1
-address=/nflxvideo.net/fd12:caf3:babe::1
-address=/netflixdnstest*.net/fd12:caf3:babe::1
-address=/amazonaws.com/fd12:caf3:babe::1
+Regex Denylist:
+```regex
+^.*netflix.*$;reply=192.168.1.108;reply=fd12:caf3:babe::1
+^.*nflx.*$;reply=192.168.1.108;reply=fd12:caf3:babe::1
+^(?:[\w-]+\.)*fast\.com$;reply=192.168.1.108;reply=fd12:caf3:babe::1
+(^|\.)apiproxy-device-prod-nlb-.+\.amazonaws\.com$;reply=192.168.1.108;reply=fd12:caf3:babe::1
+(^|\.)apiproxy-website-nlb-prod-.+\.amazonaws\.com$;reply=192.168.1.108;reply=fd12:caf3:babe::1
+(^|\.)dualstack\.apiproxy-.+\.amazonaws\.com$;reply=192.168.1.108;reply=fd12:caf3:babe::1
+(^|\.)dualstack\.ichnaea-web-.+\.amazonaws\.com$;reply=192.168.1.108;reply=fd12:caf3:babe::1
 ```
-</details>
 
-Or using the [helm chart](https://github.com/AlexPresso/helm.alexpresso.me/tree/main/charts/pihole):
+Using the [helm chart](https://github.com/AlexPresso/helm.alexpresso.me/tree/main/charts/pihole):
 
 <details>
     <summary>values.yaml</summary>
 
 ```yaml
 # ...
-additionalDnsmasq:
-# IPv4
-- "address=/netflix.net/192.168.1.108"
-- "address=/netflixstudios.com/192.168.1.108"
-- "address=/netflix.com/192.168.1.108"
-- "address=/fast.com/192.168.1.108"
-- "address=/netflix.ca/192.168.1.108"
-- "address=/netflix.com/192.168.1.108"
-- "address=/netflix.net/192.168.1.108"
-- "address=/netflixinvestor.com/192.168.1.108"
-- "address=/nflxext.com/192.168.1.108"
-- "address=/nflximg.com/192.168.1.108"
-- "address=/nflximg.net/192.168.1.108"
-- "address=/nflxsearch.net/192.168.1.108"
-- "address=/nflxso.net/192.168.1.108"
-- "address=/nflxvideo.net/192.168.1.108"
-- "address=/netflixdnstest*.net/192.168.1.108"
-- "address=/amazonaws.com/192.168.1.108"
-# IPv6
-- "address=/netflix.net/fd12:caf3:babe::1"
-- "address=/netflixstudios.com/fd12:caf3:babe::1"
-- "address=/netflix.com/fd12:caf3:babe::1"
-- "address=/fast.com/fd12:caf3:babe::1"
-- "address=/netflix.ca/fd12:caf3:babe::1"
-- "address=/netflix.com/fd12:caf3:babe::1"
-- "address=/netflix.net/fd12:caf3:babe::1"
-- "address=/netflixinvestor.com/fd12:caf3:babe::1"
-- "address=/nflxext.com/fd12:caf3:babe::1"
-- "address=/nflximg.com/fd12:caf3:babe::1"
-- "address=/nflximg.net/fd12:caf3:babe::1"
-- "address=/nflxsearch.net/fd12:caf3:babe::1"
-- "address=/nflxso.net/fd12:caf3:babe::1"
-- "address=/nflxvideo.net/fd12:caf3:babe::1"
-- "address=/netflixdnstest*.net/fd12:caf3:babe::1"
-- "address=/amazonaws.com/fd12:caf3:babe::1"
+dns:
+  # ...
+  domainlists:
+    exactAllowlist: []
+    exactDenylist: []
+    regexAllowlist: []
+    regexDenylist:
+      - "^.*netflix.*$;reply=192.168.1.108;reply=fd12:caf3:babe::1" # Every domain or subdomain that contains netflix
+      - "^.*nflx.*$;reply=192.168.1.108;reply=fd12:caf3:babe::1" # Every domain or subdomain that contains nflx
+      - "^(?:[\\w-]+\\.)*fast\\.com$;reply=192.168.1.108;reply=fd12:caf3:babe::1" # Every domain or subdomain that ends with fast.com
+      - "(^|\\.)apiproxy-device-prod-nlb-.+\\.amazonaws\\.com$;reply=192.168.1.108;reply=fd12:caf3:babe::1" # AWS domains that contains patterns used by netflix
+      - "(^|\\.)apiproxy-website-nlb-prod-.+\\.amazonaws\\.com$;reply=192.168.1.108;reply=fd12:caf3:babe::1" # AWS domains that contains patterns used by netflix
+      - "(^|\\.)dualstack\\.apiproxy-.+\\.amazonaws\\.com$;reply=192.168.1.108;reply=fd12:caf3:babe::1" # AWS domains that contains patterns used by netflix
+      - "(^|\\.)dualstack\\.ichnaea-web-.+\\.amazonaws\\.com$;reply=192.168.1.108;reply=fd12:caf3:babe::1" # AWS domains that contains patterns used by netflix
 # ...
 ```
 </details>
@@ -294,16 +249,16 @@ additionalDnsmasq:
 At this point, all local devices are already accessing Netflix through the Forward Proxy.
 Forward Proxy `stdout` logs:
 ```log
-10.42.0.1 -> occ-0-XXXX-XXXX.1.nflxso.net:443 proto=TCP bytes_sent=24438 bytes_received=991 duration=2.510s
-10.42.0.1 -> occ-0-XXXX-XXXX.1.nflxso.net:443 proto=TCP bytes_sent=1141422 bytes_received=1202 duration=3.895s
-10.42.0.1 -> occ-0-XXXX-XXXX.1.nflxso.net:443 proto=TCP bytes_sent=572895 bytes_received=1635 duration=5.021s
-10.42.0.1 -> occ-0-XXXX-XXXX.1.nflxso.net:443 proto=TCP bytes_sent=67514 bytes_received=991 duration=2.431s
-10.42.0.1 -> occ-0-XXXX-XXXX.1.nflxso.net:443 proto=TCP bytes_sent=118640 bytes_received=991 duration=3.550s
-10.42.0.1 -> ipv4-XXXX-XXXXXX-ix.1.oca.nflxvideo.net:443 proto=TCP bytes_sent=91456 bytes_received=1444 duration=0.982s
-10.42.0.1 -> ipv4-XXXX-XXXXXX-X-isp.1.oca.nflxvideo.net:443 proto=TCP bytes_sent=342429 bytes_received=3108 duration=4.524s
-10.42.0.1 -> ipv4-XXXX-XXXXXX-X.1.oca.nflxvideo.net:443 proto=TCP bytes_sent=112581 bytes_received=1834 duration=3.360s
-10.42.0.1 -> ios.prod.ftl.netflix.com:443 proto=TCP bytes_sent=5996 bytes_received=2087 duration=0.702s
-10.42.0.1 -> ipv4-XXXX-XXXXXX-X.1.oca.nflxvideo.net:443 proto=TCP bytes_sent=27082 bytes_received=1214 duration=2.977s
+10.42.0.1 -> occ-0-XXXX-XXXX.1.nflxso.net:443 proto=TCP bytes_sent=24438 bytes_received=991 duration=2.510ms
+10.42.0.1 -> occ-0-XXXX-XXXX.1.nflxso.net:443 proto=TCP bytes_sent=1141422 bytes_received=1202 duration=3.895ms
+10.42.0.1 -> occ-0-XXXX-XXXX.1.nflxso.net:443 proto=TCP bytes_sent=572895 bytes_received=1635 duration=5.021ms
+10.42.0.1 -> occ-0-XXXX-XXXX.1.nflxso.net:443 proto=TCP bytes_sent=67514 bytes_received=991 duration=2.431ms
+10.42.0.1 -> occ-0-XXXX-XXXX.1.nflxso.net:443 proto=TCP bytes_sent=118640 bytes_received=991 duration=3.550ms
+10.42.0.1 -> ipv4-XXXX-XXXXXX-ix.1.oca.nflxvideo.net:443 proto=TCP bytes_sent=91456 bytes_received=1444 duration=0.982ms
+10.42.0.1 -> ipv4-XXXX-XXXXXX-X-isp.1.oca.nflxvideo.net:443 proto=TCP bytes_sent=342429 bytes_received=3108 duration=4.524ms
+10.42.0.1 -> ipv4-XXXX-XXXXXX-X.1.oca.nflxvideo.net:443 proto=TCP bytes_sent=112581 bytes_received=1834 duration=3.360ms
+10.42.0.1 -> ios.prod.ftl.netflix.com:443 proto=TCP bytes_sent=5996 bytes_received=2087 duration=0.702ms
+10.42.0.1 -> ipv4-XXXX-XXXXXX-X.1.oca.nflxvideo.net:443 proto=TCP bytes_sent=27082 bytes_received=1214 duration=2.977ms
 ```
 
 #### Configuring Wireguard
