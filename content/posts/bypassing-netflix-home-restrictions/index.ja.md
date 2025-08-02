@@ -156,7 +156,7 @@ stream {
   resolver 1.1.1.1 ipv6=on valid=10s;
 
   log_format basic '[$time_local] $remote_addr -> $ssl_preread_server_name:$server_port '
-                   'proto=$protocol bytes_sent=$bytes_sent bytes_received=$bytes_received duration=${session_time}s';
+                   'proto=$protocol bytes_sent=$bytes_sent bytes_received=$bytes_received duration=${session_time}ms';
 
   server {
     listen 443;
@@ -169,7 +169,7 @@ http {
   resolver 1.1.1.1 ipv6=on valid=10s;
 
   log_format basic '[$time_local] $remote_addr -> $host:$server_port '
-                   'proto=$server_protocol bytes_sent=$bytes_sent bytes_received=$request_length duration=${request_time}s';
+                   'proto=$server_protocol bytes_sent=$bytes_sent bytes_received=$request_length duration=${request_time}ms';
 
   server {
     listen 80;
@@ -185,19 +185,27 @@ http {
 
 この設定は`http`と`https`の両方のプロトコルに対するフォワードプロキシを実行します。`stream`ブロックはRAW TCPパススルーを可能にし、TLS終端なしでSNIベースのルーティングを実現します。
 
-#### DNS スプーフィングの設定
+#### DNSスプーフィングの設定
 
-フォワードプロキシを導入したら、Netflix ドメインのエントリを DNS サーバーに追加し、フォワードプロキシの IP（私の場合は `192.168.1.108` と `fd12:caf3:babe::1`）を指すようにする必要があります。
+フォワードプロキシが展開されたので、NetflixのドメインエントリをDNSサーバーに追加し、フォワードプロキシのIP（私の場合は `192.168.1.108` と `fd12:caf3:babe::1`）を指すように設定する必要があります。
 
-もちろん、すべてのドメインとサブドメインにレコードを手動で追加するのは面倒で安全ではありません。この目的には、ワイルドカードドメインエントリ（例：`*.netflix.com`、netflix の任意のサブドメインに一致）が最適ですが、PiHole はネイティブではこれをサポートしていません。これは理解できることで、ワイルドカードドメインレコードは主に DNS スプーフィングに使用され、一般的には防止したいものだからです。
+もちろん、すべてのドメインやサブドメインに対して手動でレコードを追加するのは面倒で安全とは言えません。このため、ワイルドカードドメインエントリ（例：`*.netflix.com`、Netflixの任意のサブドメインにマッチ）が理想的ですが、PiHoleはネイティブにサポートしていません。これは、ワイルドカードドメインレコードが主にDNSスプーフィングに使われるためであり、一般的には防ぎたい機能だからです。
 
-幸いなことに、PiHole はブラックリストで正規表現をサポートしています。また、カスタム IP でレスポンスタイプを上書きできる拡張構文も備えており、同じ結果を達成することが可能です。
+幸いなことに、PiHoleはブラックリスト／ホワイトリストで正規表現（regex）パターンをサポートしています。  
+さらに、応答IPを上書きできる拡張構文もサポートしており、これにより同じ結果を実現可能です。
+
+*注意：正規表現の拒否リスト（ブラックリスト）に追加する方がホワイトリストに追加するより望ましいです。なぜなら、拒否リストは[最後にチェックされる](https://docs.pi-hole.net/database/domain-database/#priorities)ため、広告ブロック機能を正常に保つのに役立つからです。*
+
 
 正規表現ブロックリスト：
 ```regex
 ^.*netflix.*$;reply=192.168.1.108;reply=fd12:caf3:babe::1
 ^.*nflx.*$;reply=192.168.1.108;reply=fd12:caf3:babe::1
 ^(?:[\w-]+\.)*fast\.com$;reply=192.168.1.108;reply=fd12:caf3:babe::1
+(^|\.)apiproxy-device-prod-nlb-.+\.amazonaws\.com$;reply=192.168.1.108;reply=fd12:caf3:babe::1
+(^|\.)apiproxy-website-nlb-prod-.+\.amazonaws\.com$;reply=192.168.1.108;reply=fd12:caf3:babe::1
+(^|\.)dualstack\.apiproxy-.+\.amazonaws\.com$;reply=192.168.1.108;reply=fd12:caf3:babe::1
+(^|\.)dualstack\.ichnaea-web-.+\.amazonaws\.com$;reply=192.168.1.108;reply=fd12:caf3:babe::1
 ```
 
 [helm チャート](https://github.com/AlexPresso/helm.alexpresso.me/tree/main/charts/pihole)を使用：
@@ -209,10 +217,18 @@ http {
 # ...
 dns:
   # ...
-  blacklist:
-    - "^.*netflix.*$;reply=192.168.1.108;reply=fd12:caf3:babe::1" # netflix を含むすべてのドメインまたはサブドメイン
-    - "^.*nflx.*$;reply=192.168.1.108;reply=fd12:caf3:babe::1" # nflx を含むすべてのドメインまたはサブドメイン
-    - "^(?:[\w-]+\.)*fast\.com$;reply=192.168.1.108;reply=fd12:caf3:babe::1" # fast.com で終わるすべてのドメインまたはサブドメイン
+  domainlists:
+    exactAllowlist: []
+    exactDenylist: []
+    regexAllowlist: []
+    regexDenylist:
+      - "^.*netflix.*$;reply=192.168.1.108;reply=fd12:caf3:babe::1" # netflix を含むすべてのドメインやサブドメイン
+      - "^.*nflx.*$;reply=192.168.1.108;reply=fd12:caf3:babe::1" # nflx を含むすべてのドメインやサブドメイン
+      - "^(?:[\\w-]+\\.)*fast\\.com$;reply=192.168.1.108;reply=fd12:caf3:babe::1" # fast.com で終わるすべてのドメインやサブドメイン
+      - "(^|\\.)apiproxy-device-prod-nlb-.+\\.amazonaws\\.com$;reply=192.168.1.108;reply=fd12:caf3:babe::1" # Netflix が使用する AWS のパターンを含むドメイン
+      - "(^|\\.)apiproxy-website-nlb-prod-.+\\.amazonaws\\.com$;reply=192.168.1.108;reply=fd12:caf3:babe::1" # Netflix が使用する AWS のパターンを含むドメイン
+      - "(^|\\.)dualstack\\.apiproxy-.+\\.amazonaws\\.com$;reply=192.168.1.108;reply=fd12:caf3:babe::1" # Netflix が使用する AWS のパターンを含むドメイン
+      - "(^|\\.)dualstack\\.ichnaea-web-.+\\.amazonaws\\.com$;reply=192.168.1.108;reply=fd12:caf3:babe::1" # Netflix が使用する AWS のパターンを含むドメイン
 # ...
 ```
 </details>
@@ -220,16 +236,16 @@ dns:
 この時点で、すべてのローカルデバイスはすでにフォワードプロキシを通じてNetflixにアクセスしています。
 フォワードプロキシの`stdout`ログ：
 ```log
-10.42.0.1 -> occ-0-XXXX-XXXX.1.nflxso.net:443 proto=TCP bytes_sent=24438 bytes_received=991 duration=2.510s
-10.42.0.1 -> occ-0-XXXX-XXXX.1.nflxso.net:443 proto=TCP bytes_sent=1141422 bytes_received=1202 duration=3.895s
-10.42.0.1 -> occ-0-XXXX-XXXX.1.nflxso.net:443 proto=TCP bytes_sent=572895 bytes_received=1635 duration=5.021s
-10.42.0.1 -> occ-0-XXXX-XXXX.1.nflxso.net:443 proto=TCP bytes_sent=67514 bytes_received=991 duration=2.431s
-10.42.0.1 -> occ-0-XXXX-XXXX.1.nflxso.net:443 proto=TCP bytes_sent=118640 bytes_received=991 duration=3.550s
-10.42.0.1 -> ipv4-XXXX-XXXXXX-ix.1.oca.nflxvideo.net:443 proto=TCP bytes_sent=91456 bytes_received=1444 duration=0.982s
-10.42.0.1 -> ipv4-XXXX-XXXXXX-X-isp.1.oca.nflxvideo.net:443 proto=TCP bytes_sent=342429 bytes_received=3108 duration=4.524s
-10.42.0.1 -> ipv4-XXXX-XXXXXX-X.1.oca.nflxvideo.net:443 proto=TCP bytes_sent=112581 bytes_received=1834 duration=3.360s
-10.42.0.1 -> ios.prod.ftl.netflix.com:443 proto=TCP bytes_sent=5996 bytes_received=2087 duration=0.702s
-10.42.0.1 -> ipv4-XXXX-XXXXXX-X.1.oca.nflxvideo.net:443 proto=TCP bytes_sent=27082 bytes_received=1214 duration=2.977s
+10.42.0.1 -> occ-0-XXXX-XXXX.1.nflxso.net:443 proto=TCP bytes_sent=24438 bytes_received=991 duration=2.510ms
+10.42.0.1 -> occ-0-XXXX-XXXX.1.nflxso.net:443 proto=TCP bytes_sent=1141422 bytes_received=1202 duration=3.895ms
+10.42.0.1 -> occ-0-XXXX-XXXX.1.nflxso.net:443 proto=TCP bytes_sent=572895 bytes_received=1635 duration=5.021ms
+10.42.0.1 -> occ-0-XXXX-XXXX.1.nflxso.net:443 proto=TCP bytes_sent=67514 bytes_received=991 duration=2.431ms
+10.42.0.1 -> occ-0-XXXX-XXXX.1.nflxso.net:443 proto=TCP bytes_sent=118640 bytes_received=991 duration=3.550ms
+10.42.0.1 -> ipv4-XXXX-XXXXXX-ix.1.oca.nflxvideo.net:443 proto=TCP bytes_sent=91456 bytes_received=1444 duration=0.982ms
+10.42.0.1 -> ipv4-XXXX-XXXXXX-X-isp.1.oca.nflxvideo.net:443 proto=TCP bytes_sent=342429 bytes_received=3108 duration=4.524ms
+10.42.0.1 -> ipv4-XXXX-XXXXXX-X.1.oca.nflxvideo.net:443 proto=TCP bytes_sent=112581 bytes_received=1834 duration=3.360ms
+10.42.0.1 -> ios.prod.ftl.netflix.com:443 proto=TCP bytes_sent=5996 bytes_received=2087 duration=0.702ms
+10.42.0.1 -> ipv4-XXXX-XXXXXX-X.1.oca.nflxvideo.net:443 proto=TCP bytes_sent=27082 bytes_received=1214 duration=2.977ms
 ```
 
 #### Wireguardの設定
