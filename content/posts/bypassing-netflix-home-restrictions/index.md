@@ -204,89 +204,28 @@ Now that the forward proxy is deployed, Netflix domain entries need to be added 
 Of course, manually adding a record for every single domain and subdomain would be a tedious and unsafe task. For this purpose, wildcard domain entries (e.g. `*.netflix.com`, matching any subdomain of netflix) are perfect, but PiHole
 does not natively support it. This is understandable since wildcard domain records are primarily used for DNS Spoofing, which is generally something you want to prevent.
 
-Fortunately, PiHole relies on [dnsmasq](https://thekelleys.org.uk/dnsmasq/doc.html) which does handle "wildcard" domain entries:
-<details>
-    <summary>/etc/dnsmasq.d/1-additional.conf</summary>
+Fortunately, PiHole supports Regex in blacklists. It also has an extension syntax where you can override the reply type with a custom IP, making it possible to achieve the same result.
 
-```Bash
-address=/netflix.net/192.168.1.108
-address=/netflixstudios.com/192.168.1.108
-address=/netflix.com/192.168.1.108
-address=/fast.com/192.168.1.108
-address=/netflix.ca/192.168.1.108
-address=/netflix.com/192.168.1.108
-address=/netflix.net/192.168.1.108
-address=/netflixinvestor.com/192.168.1.108
-address=/nflxext.com/192.168.1.108
-address=/nflximg.com/192.168.1.108
-address=/nflximg.net/192.168.1.108
-address=/nflxsearch.net/192.168.1.108
-address=/nflxso.net/192.168.1.108
-address=/nflxvideo.net/192.168.1.108
-address=/netflixdnstest*.net/192.168.1.108
-address=/amazonaws.com/192.168.1.108
-
-address=/netflix.net/fd12:caf3:babe::1
-address=/netflixstudios.com/fd12:caf3:babe::1
-address=/netflix.com/fd12:caf3:babe::1
-address=/fast.com/fd12:caf3:babe::1
-address=/netflix.ca/fd12:caf3:babe::1
-address=/netflix.com/fd12:caf3:babe::1
-address=/netflix.net/fd12:caf3:babe::1
-address=/netflixinvestor.com/fd12:caf3:babe::1
-address=/nflxext.com/fd12:caf3:babe::1
-address=/nflximg.com/fd12:caf3:babe::1
-address=/nflximg.net/fd12:caf3:babe::1
-address=/nflxsearch.net/fd12:caf3:babe::1
-address=/nflxso.net/fd12:caf3:babe::1
-address=/nflxvideo.net/fd12:caf3:babe::1
-address=/netflixdnstest*.net/fd12:caf3:babe::1
-address=/amazonaws.com/fd12:caf3:babe::1
+Regex Blocklist:
+```regex
+^.*netflix.*$;reply=192.168.1.108;reply=fd12:caf3:babe::1
+^.*nflx.*$;reply=192.168.1.108;reply=fd12:caf3:babe::1
+^(?:[\w-]+\.)*fast\.com$;reply=192.168.1.108;reply=fd12:caf3:babe::1
 ```
-</details>
 
-Or using the [helm chart](https://github.com/AlexPresso/helm.alexpresso.me/tree/main/charts/pihole):
+Using the [helm chart](https://github.com/AlexPresso/helm.alexpresso.me/tree/main/charts/pihole):
 
 <details>
     <summary>values.yaml</summary>
 
 ```yaml
 # ...
-additionalDnsmasq:
-# IPv4
-- "address=/netflix.net/192.168.1.108"
-- "address=/netflixstudios.com/192.168.1.108"
-- "address=/netflix.com/192.168.1.108"
-- "address=/fast.com/192.168.1.108"
-- "address=/netflix.ca/192.168.1.108"
-- "address=/netflix.com/192.168.1.108"
-- "address=/netflix.net/192.168.1.108"
-- "address=/netflixinvestor.com/192.168.1.108"
-- "address=/nflxext.com/192.168.1.108"
-- "address=/nflximg.com/192.168.1.108"
-- "address=/nflximg.net/192.168.1.108"
-- "address=/nflxsearch.net/192.168.1.108"
-- "address=/nflxso.net/192.168.1.108"
-- "address=/nflxvideo.net/192.168.1.108"
-- "address=/netflixdnstest*.net/192.168.1.108"
-- "address=/amazonaws.com/192.168.1.108"
-# IPv6
-- "address=/netflix.net/fd12:caf3:babe::1"
-- "address=/netflixstudios.com/fd12:caf3:babe::1"
-- "address=/netflix.com/fd12:caf3:babe::1"
-- "address=/fast.com/fd12:caf3:babe::1"
-- "address=/netflix.ca/fd12:caf3:babe::1"
-- "address=/netflix.com/fd12:caf3:babe::1"
-- "address=/netflix.net/fd12:caf3:babe::1"
-- "address=/netflixinvestor.com/fd12:caf3:babe::1"
-- "address=/nflxext.com/fd12:caf3:babe::1"
-- "address=/nflximg.com/fd12:caf3:babe::1"
-- "address=/nflximg.net/fd12:caf3:babe::1"
-- "address=/nflxsearch.net/fd12:caf3:babe::1"
-- "address=/nflxso.net/fd12:caf3:babe::1"
-- "address=/nflxvideo.net/fd12:caf3:babe::1"
-- "address=/netflixdnstest*.net/fd12:caf3:babe::1"
-- "address=/amazonaws.com/fd12:caf3:babe::1"
+dns:
+  # ...
+  blacklist:
+    - "^.*netflix.*$;reply=192.168.1.108;reply=fd12:caf3:babe::1" # Every domain or subdomain that contains netflix
+    - "^.*nflx.*$;reply=192.168.1.108;reply=fd12:caf3:babe::1" # Every domain or subdomain that contains nflx
+    - "^(?:[\w-]+\.)*fast\.com$;reply=192.168.1.108;reply=fd12:caf3:babe::1" # Every domain or subdomain that ends with fast.com
 # ...
 ```
 </details>

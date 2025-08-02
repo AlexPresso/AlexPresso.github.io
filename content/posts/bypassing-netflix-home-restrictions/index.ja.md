@@ -185,96 +185,34 @@ http {
 
 この設定は`http`と`https`の両方のプロトコルに対するフォワードプロキシを実行します。`stream`ブロックはRAW TCPパススルーを可能にし、TLS終端なしでSNIベースのルーティングを実現します。
 
-#### DNSスプーフィングの設定
+#### DNS スプーフィングの設定
 
-フォワードプロキシがデプロイされたので、NetflixドメインエントリをDNSサーバーに追加し、フォワードプロキシのIP（私の場合は`192.168.1.108`と`fd12:caf3:babe::1`）を指すようにする必要があります。
+フォワードプロキシを導入したら、Netflix ドメインのエントリを DNS サーバーに追加し、フォワードプロキシの IP（私の場合は `192.168.1.108` と `fd12:caf3:babe::1`）を指すようにする必要があります。
 
-もちろん、すべてのドメインとサブドメインに対して手動でレコードを追加するのは面倒で安全ではないでしょう。この目的のために、ワイルドカードドメインエントリ（例：`*.netflix.com`、netflixの任意のサブドメインに一致）が完璧ですが、PiHoleは
-ネイティブにそれをサポートしていません。これは理解できることです。ワイルドカードドメインレコードは主にDNSスプーフィングに使用されるものであり、一般的には防止したいものだからです。
+もちろん、すべてのドメインとサブドメインにレコードを手動で追加するのは面倒で安全ではありません。この目的には、ワイルドカードドメインエントリ（例：`*.netflix.com`、netflix の任意のサブドメインに一致）が最適ですが、PiHole はネイティブではこれをサポートしていません。これは理解できることで、ワイルドカードドメインレコードは主に DNS スプーフィングに使用され、一般的には防止したいものだからです。
 
-幸いなことに、PiHoleは[dnsmasq](https://thekelleys.org.uk/dnsmasq/doc.html)に依存しており、これは「ワイルドカード」ドメインエントリを処理します：
-<details>
-    <summary>/etc/dnsmasq.d/1-additional.conf</summary>
+幸いなことに、PiHole はブラックリストで正規表現をサポートしています。また、カスタム IP でレスポンスタイプを上書きできる拡張構文も備えており、同じ結果を達成することが可能です。
 
-```Bash
-address=/netflix.net/192.168.1.108
-address=/netflixstudios.com/192.168.1.108
-address=/netflix.com/192.168.1.108
-address=/fast.com/192.168.1.108
-address=/netflix.ca/192.168.1.108
-address=/netflix.com/192.168.1.108
-address=/netflix.net/192.168.1.108
-address=/netflixinvestor.com/192.168.1.108
-address=/nflxext.com/192.168.1.108
-address=/nflximg.com/192.168.1.108
-address=/nflximg.net/192.168.1.108
-address=/nflxsearch.net/192.168.1.108
-address=/nflxso.net/192.168.1.108
-address=/nflxvideo.net/192.168.1.108
-address=/netflixdnstest*.net/192.168.1.108
-address=/amazonaws.com/192.168.1.108
-
-address=/netflix.net/fd12:caf3:babe::1
-address=/netflixstudios.com/fd12:caf3:babe::1
-address=/netflix.com/fd12:caf3:babe::1
-address=/fast.com/fd12:caf3:babe::1
-address=/netflix.ca/fd12:caf3:babe::1
-address=/netflix.com/fd12:caf3:babe::1
-address=/netflix.net/fd12:caf3:babe::1
-address=/netflixinvestor.com/fd12:caf3:babe::1
-address=/nflxext.com/fd12:caf3:babe::1
-address=/nflximg.com/fd12:caf3:babe::1
-address=/nflximg.net/fd12:caf3:babe::1
-address=/nflxsearch.net/fd12:caf3:babe::1
-address=/nflxso.net/fd12:caf3:babe::1
-address=/nflxvideo.net/fd12:caf3:babe::1
-address=/netflixdnstest*.net/fd12:caf3:babe::1
-address=/amazonaws.com/fd12:caf3:babe::1
+正規表現ブロックリスト：
+```regex
+^.*netflix.*$;reply=192.168.1.108;reply=fd12:caf3:babe::1
+^.*nflx.*$;reply=192.168.1.108;reply=fd12:caf3:babe::1
+^(?:[\w-]+\.)*fast\.com$;reply=192.168.1.108;reply=fd12:caf3:babe::1
 ```
-</details>
 
-または[helmチャート](https://github.com/AlexPresso/helm.alexpresso.me/tree/main/charts/pihole)を使用する場合：
+[helm チャート](https://github.com/AlexPresso/helm.alexpresso.me/tree/main/charts/pihole)を使用：
 
 <details>
     <summary>values.yaml</summary>
 
 ```yaml
 # ...
-additionalDnsmasq:
-  # IPv4
-  - "address=/netflix.net/192.168.1.108"
-  - "address=/netflixstudios.com/192.168.1.108"
-  - "address=/netflix.com/192.168.1.108"
-  - "address=/fast.com/192.168.1.108"
-  - "address=/netflix.ca/192.168.1.108"
-  - "address=/netflix.com/192.168.1.108"
-  - "address=/netflix.net/192.168.1.108"
-  - "address=/netflixinvestor.com/192.168.1.108"
-  - "address=/nflxext.com/192.168.1.108"
-  - "address=/nflximg.com/192.168.1.108"
-  - "address=/nflximg.net/192.168.1.108"
-  - "address=/nflxsearch.net/192.168.1.108"
-  - "address=/nflxso.net/192.168.1.108"
-  - "address=/nflxvideo.net/192.168.1.108"
-  - "address=/netflixdnstest*.net/192.168.1.108"
-  - "address=/amazonaws.com/192.168.1.108"
-  # IPv6
-  - "address=/netflix.net/fd12:caf3:babe::1"
-  - "address=/netflixstudios.com/fd12:caf3:babe::1"
-  - "address=/netflix.com/fd12:caf3:babe::1"
-  - "address=/fast.com/fd12:caf3:babe::1"
-  - "address=/netflix.ca/fd12:caf3:babe::1"
-  - "address=/netflix.com/fd12:caf3:babe::1"
-  - "address=/netflix.net/fd12:caf3:babe::1"
-  - "address=/netflixinvestor.com/fd12:caf3:babe::1"
-  - "address=/nflxext.com/fd12:caf3:babe::1"
-  - "address=/nflximg.com/fd12:caf3:babe::1"
-  - "address=/nflximg.net/fd12:caf3:babe::1"
-  - "address=/nflxsearch.net/fd12:caf3:babe::1"
-  - "address=/nflxso.net/fd12:caf3:babe::1"
-  - "address=/nflxvideo.net/fd12:caf3:babe::1"
-  - "address=/netflixdnstest*.net/fd12:caf3:babe::1"
-  - "address=/amazonaws.com/fd12:caf3:babe::1"
+dns:
+  # ...
+  blacklist:
+    - "^.*netflix.*$;reply=192.168.1.108;reply=fd12:caf3:babe::1" # netflix を含むすべてのドメインまたはサブドメイン
+    - "^.*nflx.*$;reply=192.168.1.108;reply=fd12:caf3:babe::1" # nflx を含むすべてのドメインまたはサブドメイン
+    - "^(?:[\w-]+\.)*fast\.com$;reply=192.168.1.108;reply=fd12:caf3:babe::1" # fast.com で終わるすべてのドメインまたはサブドメイン
 # ...
 ```
 </details>
