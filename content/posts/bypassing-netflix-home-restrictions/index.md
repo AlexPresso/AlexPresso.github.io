@@ -32,7 +32,7 @@ My home network stack is entirely deployed and orchestrated in a [K3S](https://k
 - [PiHole](https://pi-hole.net/) with a [Cloudflared](https://github.com/cloudflare/cloudflared) sidecar: For DHCP, DNS Sink (Domain blacklist / Ad-blocker), DoH (DNS-over-HTTPs).
 - [Wireguard](https://www.wireguard.com/): VPN server configured in a split-tunnelling mode, to use PiHole DNS Sink from mobile devices + access my home NAS.
 
-*If you're also using Kubernetes, and willing to deploy the same stack, you can find my helm charts [here](https://github.com/AlexPresso/helm.alexpresso.me/tree/main/charts) (explanations on adding the helm repo are in the Readme)*.
+*If you're also using Kubernetes and willing to deploy the same stack, you can find my helm charts [here](https://github.com/AlexPresso/helm.alexpresso.me/tree/main/charts) (explanations on adding the helm repo are in the Readme)*.
 
 {{< figure src="network-architecture.png" alt="My home network architecture" title="Network Architecture" >}}
 
@@ -45,9 +45,9 @@ From here, most other posts suggest to:
 - "Tunnel only Netflix IP ranges": Not safe, it only works for a limited time until one of Netflix backends (which are hosted on AWS) change IP outside the Amazon range you've configured.
 And you have to do it for all devices / enroll devices on an MDM (Mobile Device Management).
 
-The solution I implemented is relying on **DNS Spoofing** with a **Forward Proxy** and has the following benefits :
-- It won't be affected by target IP changes (Proxy resolves domains from home-network)
-- You can keep split-tunneling
+The solution I implemented relies on a VPN (Wireguard) combined with **DNS Spoofing** and a **Forward Proxy** and has the following benefits :
+- It isn't affected by target IP changes (Proxy resolves domains from home-network)
+- Split-tunneling can still be used
 - Minimal maintenance and totally transparent for client devices
 - Can work with any other website than Netflix, without changing VPN config, just by doing **DNS Spoofing** for these domains.
 
@@ -85,7 +85,7 @@ involves trusting certificates on client devices and won't work with application
 
 The plaintext nature of SNI presents privacy concerns, that's why there is a new emerging standard called ECH ([Encrypted Client Hello](https://datatracker.ietf.org/doc/html/draft-ietf-tls-esni-25)), which I'll discuss later.
 
-Here is the full workflow involved when using the transparent Forward Proxy with DNS Spoofing (the VPN Server was ignored to keep clarity):
+Here is the full workflow involved when using the transparent Forward Proxy with DNS Spoofing (the VPN Server was omitted here for clarity's sake):
 
 {{< figure src="full-workflow.png" alt="Full Workflow" title="Full Workflow" >}}
 1. The device makes a DNS request to resolve a domain IP (i.e. `netflix.com`)
@@ -313,6 +313,17 @@ PresharedKey = # Your Peer PSK
 
 *Note that the `AllowedIPs` setting in the client configuration is crucial - it determines which traffic will be routed through the VPN. Here we're only tunneling traffic for the PiHole and Forward Proxy.*
 
+### Final Architecture
+
+Here’s the final architecture that integrates all components.
+
+{{< figure src="final-architecture.png" alt="Final architecture" title="Final Architecture" >}}
+
+The forward proxy handles DNS resolution directly from the home network, so VPN clients remain unaffected by target IP changes, ensuring a stable and transparent setup. 
+This setup also makes timing-based detection by Netflix much harder, as requests appear to come from the expected location with consistent DNS responses and normal latencies. 
+
+Maintenance is easier too: spoofing a new Netflix domain only requires adding it to the DNS server, then it automatically works for all clients (both local and VPN).
+
 ## A Note On TLSv1.3 And ECH
 
 As said before, having a plaintext CH (**Client Hello**) is a serious threat to privacy,
@@ -324,7 +335,7 @@ have already censored its usage, as monitoring encrypted SNIs would require dire
 Now, you might be thinking:
 > "Okay, ECH is a good thing, but does that mean this technique to bypass Netflix won't work anymore?"
 
-Short answer: Yes, but it's still possible to achieve SNI-like forwarding without it. 
+Short answer: Yes... but there is another way to achieve "SNI-like" forwarding without it. 
 
-I'll make a full article about it when I'm done coding it.
+I’ll publish a full article on it once the coding is done.
 Until then, take care and have fun watching Netflix from around the world.
